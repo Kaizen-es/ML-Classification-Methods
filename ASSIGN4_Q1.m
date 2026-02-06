@@ -1,6 +1,4 @@
 %{
-                    EECE5644 FALL 2025 - ASSIGNMENT 4
-                                QUESTION 1
                         SVM AND MLP CLASSIFICATION
 %}
 
@@ -9,7 +7,6 @@ clear all, close all,
 % Set random seed for reproducibility
 rng(5644, 'twister');
 
-fprintf('ASSIGNMENT 4 - QUESTION 1\n');
 fprintf('SVM and MLP Classification\n\n');
 
 % DATA GENERATION
@@ -47,14 +44,14 @@ legend('Class -1 (inner)', 'Class +1 (outer)', 'Location', 'best');
 fprintf('PART 1: SVM WITH GAUSSIAN KERNEL\n');
 fprintf('Using K-fold cross-validation for hyperparameter selection\n\n');
 
-% K-fold cross-validation setup - Adapted from Professor's svmKfoldCrossValidation.m
+% K-fold cross-validation setup
 K = 10;
 dummy = ceil(linspace(0, N_train, K+1));
 for k = 1:K
     ind_partition_limits(k,:) = [dummy(k)+1, dummy(k+1)];
 end
 
-% Hyperparameter grid - Adapted from Professor's svmKfoldCrossValidation.m
+% Hyperparameter grid 
 C_list = 10.^linspace(-1, 5, 11);          % Box constraint values (expanded range)
 sigma_list = 10.^linspace(-1, 3, 11);      % Kernel scale values (expanded range)
 
@@ -64,7 +61,7 @@ fprintf('C (BoxConstraint): [%.2e, %.2e] (%d values)\n', ...
 fprintf('sigma (KernelScale): [%.2e, %.2e] (%d values)\n\n', ...
     min(sigma_list), max(sigma_list), length(sigma_list));
 
-% K-fold cross-validation - Adapted from Professor's svmKfoldCrossValidation.m
+% K-fold cross-validation 
 fprintf('%d-fold cross-validation: \n', K);
 P_correct = zeros(length(C_list), length(sigma_list));
 
@@ -78,7 +75,7 @@ for sigma_counter = 1:length(sigma_list)
         N_correct = zeros(K, 1);
         
         for k = 1:K
-            % Partition data - Adapted from Professor's svmKfoldCrossValidation.m
+            % Partition data 
             ind_validate = ind_partition_limits(k,1):ind_partition_limits(k,2);
             x_validate = x_train(:, ind_validate);
             l_validate = labels_train(ind_validate);
@@ -94,11 +91,11 @@ for sigma_counter = 1:length(sigma_list)
             x_train_fold = x_train(:, ind_train_fold);
             l_train_fold = labels_train(ind_train_fold);
             
-            % Train SVM - Adapted from Professor's svmKfoldCrossValidation.m
+            % Train SVM 
             SVM_k = fitcsvm(x_train_fold', l_train_fold', 'BoxConstraint', C_val, ...
                 'KernelFunction', 'gaussian', 'KernelScale', sigma_val);
             
-            % Validate - Adapted from Professor's svmKfoldCrossValidation.m
+            % Validate 
             d_validate = SVM_k.predict(x_validate')';
             ind_correct = find(l_validate .* d_validate == 1);
             N_correct(k) = length(ind_correct);
@@ -108,14 +105,13 @@ for sigma_counter = 1:length(sigma_list)
     end
 end
 
-% Find optimal hyperparameters - Pattern from Professor's svmKfoldCrossValidation.m
+% Find optimal hyperparameters 
 [max_correct, ind_i] = max(P_correct(:));
 [ind_best_C, ind_best_sigma] = ind2sub(size(P_correct), ind_i);
 C_best = C_list(ind_best_C);
 sigma_best = sigma_list(ind_best_sigma);
 
-% Display top 10 hyperparameter combinations - Shows "various choices" per assignment requirement
-% Added based on suggestion from Chatgpt
+% Display top 10 hyperparameter combinations 
 [sorted_accuracies, sorted_indices] = sort(P_correct(:), 'descend');
 fprintf('\nTop 10 Hyperparameter Combinations:\n');
 fprintf('  Rank |   C      |  sigma   | Accuracy\n');
@@ -132,7 +128,7 @@ fprintf('C*: %.2e\n', C_best);
 fprintf('Sigma*: %.2e\n', sigma_best);
 fprintf('Best CV accuracy: %.4f (%.2f%%)\n\n', max_correct, 100*max_correct);
 
-% Visualize cross-validation results - Adapted from Professor's svmKfoldCrossValidation.m
+% Visualize cross-validation results 
 figure(2), clf,
 subplot(2,2,1),
 
@@ -162,12 +158,12 @@ hold on;
 plot(log10(sigma_best), P_correct_vs_sigma(ind_best_sigma), 'ro', 'MarkerSize', 10, 'LineWidth', 2);
 legend('CV Accuracy', sprintf('\\sigma* = %.3g', sigma_best), 'Location', 'best');
 
-% Train final SVM with optimal hyperparameters - Adapted from Professor's svmKfoldCrossValidation.m
+% Train final SVM with optimal hyperparameters 
 fprintf('Train final SVM with optimal hyperparameters: \n');
 SVM_best = fitcsvm(x_train', labels_train', 'BoxConstraint', C_best, ...
     'KernelFunction', 'gaussian', 'KernelScale', sigma_best);
 
-% Evaluate on test set - Adapted from Professor's svmKfoldCrossValidation.m
+% Evaluate on test set
 d_test_SVM = SVM_best.predict(x_test')';
 ind_correct_SVM = find(labels_test .* d_test_SVM == 1);
 ind_incorrect_SVM = find(labels_test .* d_test_SVM == -1);
@@ -176,12 +172,12 @@ p_error_SVM = length(ind_incorrect_SVM) / N_test;
 fprintf('SVM Test Performance:\n');
 fprintf('P(error) = %.4f \n', p_error_SVM);
 
-% Visualize SVM results - Adapted from Professor's svmKfoldCrossValidation.m
+% Visualize SVM results
 subplot(2,2,[3,4]),
 plot(x_test(1, ind_correct_SVM), x_test(2, ind_correct_SVM), 'g.', 'MarkerSize', 4); hold on,
 plot(x_test(1, ind_incorrect_SVM), x_test(2, ind_incorrect_SVM), 'r.', 'MarkerSize', 4);
 
-% Plot decision boundary - Adapted from Professor's svmKfoldCrossValidation.m
+% Plot decision boundary
 N_x = 200; N_y = 200;
 x_grid = linspace(min(x_test(1,:)), max(x_test(1,:)), N_x);
 y_grid = linspace(min(x_test(2,:)), max(x_test(2,:)), N_y);
@@ -210,7 +206,7 @@ fprintf('Testing P values: ');
 fprintf('%d ', P_values);
 fprintf('\n\n');
 
-% K-fold cross-validation for MLP - Adapted from Professor's PolynomialFitCrossValidation.m
+% K-fold cross-validation for MLP 
 fprintf('%d-fold cross-validation for MLP: \n', K);
 cv_errors_MLP = zeros(1, length(P_values));
 
@@ -221,7 +217,7 @@ for j = 1:length(P_values)
     fold_errors = zeros(K, 1);
     
     for k = 1:K
-        % Partition data - Adapted from Professor's PolynomialFitCrossValidation.m
+        % Partition data 
         ind_validate = ind_partition_limits(k,1):ind_partition_limits(k,2);
         x_validate = x_train(:, ind_validate);
         l_validate = labels_train_MLP(ind_validate);
@@ -249,14 +245,13 @@ for j = 1:length(P_values)
     fprintf('CV error = %.4f\n', cv_errors_MLP(j));
 end
 
-% Select optimal P - Adapted from Professor's PolynomialFitCrossValidation.m
+% Select optimal P 
 [min_error_MLP, best_idx_MLP] = min(cv_errors_MLP);
 P_optimal = P_values(best_idx_MLP);
 
 fprintf('Optimal P*: %d (CV error = %.4f)\n\n', P_optimal, min_error_MLP);
 
 % Train final MLP with optimal P and multiple initializations
-% Multiple initialization strategy adapted from discussion with ChatGPT
 fprintf('Training final MLP with P* = %d: \n', P_optimal);
 best_log_likelihood = -inf;
 best_model_MLP = [];
@@ -330,7 +325,7 @@ else
 end
 
 % HELPER FUNCTIONS
-% Data generation function - Adapted from discussion with Claude
+% Data generation function 
 function [x, labels] = generate_concentric_circles(N, r_minus1, r_plus1, sigma)
     % Equal priors for binary classes
     labels = 2 * (rand(1, N) >= 0.5) - 1;  % -1 or +1
@@ -349,12 +344,11 @@ function [x, labels] = generate_concentric_circles(N, r_minus1, r_plus1, sigma)
 end
 
 % Custom MLP training function
-% Developed with Claude, integrating Professor's patterns from mleMLPwAWGN.m and kfoldMLP.m
 function model = trainCustomMLP(X, Y, n_perceptrons, n_classes)
     [n_X, N] = size(X);
     n_Y = n_classes;
     
-    % Xavier initialization - Recommended by ChatGPT
+    % Xavier initialization
     params.A = randn(n_perceptrons, n_X) * sqrt(2/n_X);
     params.b = zeros(n_perceptrons, 1);
     params.C = randn(n_Y, n_perceptrons) * sqrt(2/n_perceptrons);
@@ -387,23 +381,22 @@ function model = trainCustomMLP(X, Y, n_perceptrons, n_classes)
 end
 
 % MLP forward pass with quadratic activation and softmax
-% Adapted from Professor's mleMLPwAWGN.m mlpModel function
-% Softmax implementation developed with Claude
-% Numerical stability improvement recommended by ChatGPT
+% Softmax implementation
+% Numerical stability improvement 
 function H = mlpModelClassification(X, params)
     N = size(X, 2);
     n_Y = length(params.d);
     
-    % First layer - From Professor's mleMLPwAWGN.m mlpModel
+    % First layer
     U = params.A * X + repmat(params.b, 1, N);
     
     % Hidden layer: Quadratic activation 
     Z = activationFunctionQuadratic(U);
     
-    % Second layer - From Professor's mleMLPwAWGN.m mlpModel
+    % Second layer
     V = params.C * Z + repmat(params.d, 1, N);
     
-    % Output layer: numerically stable softmax - Recommended by ChatGPT
+    % Output layer - numerically stable softmax
     % Max-subtraction prevents overflow for large V values
     V_max = max(V, [], 1);
     E = exp(V - repmat(V_max, n_Y, 1));
@@ -415,8 +408,7 @@ function out = activationFunctionQuadratic(in)
     out = in.^2; 
 end
 
-% Cross-entropy objective function - Adapted from Professor's mleMLPwAWGN.m objectiveFunction
-% Implementation developed with Claude
+% Cross-entropy objective function 
 function obj_fnc_value = objectiveFunctionClassification(X, Y, size_params, vec_params)
     N = size(X, 2);
     n_X = size_params(1);
@@ -432,7 +424,7 @@ function obj_fnc_value = objectiveFunctionClassification(X, Y, size_params, vec_
     % Forward pass
     H = mlpModelClassification(X, params);
     
-    % Cross-entropy loss - Pattern from Professor's kfoldMLP.m
+    % Cross-entropy loss 
     % ML estimation minimizes average cross-entropy loss
     cross_entropy = 0;
     for i = 1:N
@@ -450,4 +442,5 @@ function predictions = predictCustomMLP(model, X)
     
     % MAP decision rule
     [~, predictions] = max(H, [], 1);
+
 end
