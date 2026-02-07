@@ -1,7 +1,5 @@
 %{
-                   EECE5644 FALL 2025 - ASSIGNMENT 1
-
-                                QUESTION 1 
+                    
 PART A: ERM CLASSIFICATION USING THE KNOWLEDGE OF TRUE DATA PDF
 %}
 
@@ -9,7 +7,7 @@ clear all, close all,
 
 fprintf('\nPART A: ERM CLASSIFIER \n');
 
-% Data generation parameters from MATLAB script in Q1
+% Data generation parameters
 n = 3;
 N = 10000; 
 mu(:,1) = [-1/2; -1/2; -1/2]; 
@@ -18,7 +16,7 @@ mu(:,2) = [1;1;1];
 Sigma (:,:,2) = [1 0.3 -0.2; 0.3 1 0.3; -0.2 0.3 1];
 p = [0.65,0.35]; % class priors for labels 0 and 1 respectively
 
-% Data generation - Based on sample code (ExpectedRiskMinimization.m)
+% Data generation
 label = rand(1,N) >= p(1); 
 Nc = [length(find(label==0)),length(find(label==1))]; % number of samples from each class
 x = zeros(n,N);
@@ -41,12 +39,12 @@ lambda = [0 1;1 0]; % loss values
 gamma = (lambda(2,1)-lambda(1,1))/(lambda(1,2)-lambda(2,2)) * p(1)/p(2); %threshold
 fprintf('Theoretical gamma: %.4f\n', gamma);
 
-% Classification at theoretical gamma - Based on sample code(ExpectedRiskMinimization.m)
+% Classification at theoretical gamma 
 discriminantScore = log(evalGaussian(x, mu(:,2), Sigma(:,:,2))) - ...
     log(evalGaussian(x, mu(:,1), Sigma(:,:,1)));
 decision_theoretical = (discriminantScore >= log(gamma)); 
 
-% Confusion matrix at theoretical gamma - Based on sample code(ExpectedRiskMinimization.m)
+% Confusion matrix at theoretical gamma 
 ind00 = find(decision_theoretical==0 & label==0); 
 p00 = length(ind00)/Nc(1); % probability of true negative
 ind10 = find(decision_theoretical==1 & label==0); 
@@ -56,7 +54,7 @@ p01 = length(ind01)/Nc(2); % probability of false negative
 ind11 = find(decision_theoretical==1 & label==1); 
 p11 = length(ind11)/Nc(2); % probability of true positive
 
-% Visualization adapted from ExpectedRiskMinimization.m
+% Visualization
 % class 0 circle, class 1 +, correct green, incorrect red
 figure(2), clf,  
 plot3(x(1,ind00),x(2,ind00),x(3,ind00),'og'); hold on,
@@ -74,10 +72,10 @@ fprintf('P(error) at theoretical gamma: %.4f\n', Perror_theoretical);
 fprintf('TPR = %.4f, FPR = %.4f\n', p11, p10);
 fprintf('\n');
 
-% Generate ROC Curve - adapted from LDAwithROCcurve.m
+% Generate ROC Curve 
 [Pfp, Ptp, Pfn, Perror, thresholdList] = ROCcurve(discriminantScore, label, p);
 
-% Empirically optimal gamma - adapted from discussion with Claude
+% Empirically optimal gamma 
 [min_Perror, min_idx] = min(Perror);
 empirical_gamma = exp(thresholdList(min_idx));
 fprintf('Empirically optimal gamma: %.4f\n', empirical_gamma);
@@ -96,7 +94,7 @@ fprintf('P(error) at theoretical gamma: %.4f | P(error) at empirical gamma: %.4f
 fprintf('Difference in P(error):        %.4f\n', abs(Perror_theoretical - min_Perror));
 fprintf('\n');
 
-% Plot ROC Curve - Utilized suggestions from Copilot
+% Plot ROC Curve 
 figure(3), clf;
 plot(Pfp, Ptp, 'b-', 'LineWidth', 2); hold on;
 plot(Pfp(min_idx), Ptp(min_idx), 'go', ...
@@ -113,7 +111,6 @@ legend('ROC Curve', sprintf('Empirical  \\gamma* = %.3f | min P(error) = %.4f',.
 grid on;
 
 %{
-%code from Professor
 function g = evalGaussian(x,mu,Sigma)
 % Evaluates the Gaussian pdf N(mu,Sigma) at each column of X
 [n,N] = size(x);
@@ -122,7 +119,6 @@ E = -0.5*sum((x-repmat(mu,1,N)).*(inv(Sigma)*(x-repmat(mu,1,N))),1);
 g = C*exp(E);
 end
 
-%Code from professor
 function [Pfp,Ptp,Pfn,Perror,thresholdList] = ROCcurve(discriminantScores,label, p)
 [sortedScores,~] = sort(discriminantScores,'ascend');
 thresholdList = [min(sortedScores)-eps,(sortedScores(1:end-1)+sortedScores(2:end))/2, max(sortedScores)+eps];
@@ -147,12 +143,12 @@ fprintf('\nPART B: NAIVE BAYES CLASSIFIER \n');
 % Define the identity covariance matrix
 Sigma_NB = eye(n); 
 
-% Classification at theoretical gamma (NB) - Based on sample code(ExpectedRiskMinimization.m)
+% Classification at theoretical gamma (NB)
 discriminantScore_NB = log(evalGaussian(x, mu(:,2), Sigma_NB)) - ...
                        log(evalGaussian(x, mu(:,1), Sigma_NB));
 decision_NB_theoretical = (discriminantScore_NB >= log(gamma));
 
-% Confusion matrix at theoretical gamma (NB) - Based on sample code(ExpectedRiskMinimization.m)
+% Confusion matrix at theoretical gamma (NB)
 ind00_NB = find(decision_NB_theoretical==0 & label==0); 
 p00_NB = length(ind00_NB)/Nc(1); % probability of true negative
 ind10_NB = find(decision_NB_theoretical==1 & label==0); 
@@ -162,7 +158,7 @@ p01_NB = length(ind01_NB)/Nc(2); % probability of false negative
 ind11_NB = find(decision_NB_theoretical==1 & label==1); 
 p11_NB = length(ind11_NB)/Nc(2); % probability of true positive
 
-% Visualization adapted from ExpectedRiskMinimization.m
+% Visualization
 % class 0 circle, class 1 +, correct green, incorrect red
 figure(4), clf,
 plot3(x(1,ind00_NB),x(2,ind00_NB),x(3,ind00_NB),'og'); hold on,
@@ -179,11 +175,11 @@ Perror_theoretical_NB = p10_NB*p(1) + p01_NB*p(2);
 fprintf('Theoretical gamma: %.4f\n', gamma);
 fprintf('P(error) at theoretical gamma (NB): %.4f\n', Perror_theoretical_NB);
 
-% Generate ROC curve (NB) - adapted from LDAwithROCcurve.m
+% Generate ROC curve (NB) 
 [Pfp_NB, Ptp_NB, Pfn_NB, Perror_NB, thresholdList_NB] = ...
     ROCcurve(discriminantScore_NB, label, p);
 
-% Empirically optimal gamma (NB) - adapted from discussion with Claude
+% Empirically optimal gamma (NB) 
 [min_Perror_NB, min_idx_NB] = min(Perror_NB);
 empirical_gamma_NB = exp(thresholdList_NB(min_idx_NB));
 fprintf('\nEmpirically optimal gamma (NB): %.4f\n', empirical_gamma_NB);
@@ -201,7 +197,7 @@ fprintf('P(error) at theoretical gamma (NB): %.4f | P(error) at empirical gamma 
 fprintf('Difference in P(error) (NB):        %.4f\n', abs(Perror_theoretical_NB - min_Perror_NB));
 fprintf('\n');
 
-% Plot ROC Curve for Naive Bayes - Utilized suggestions from Chatgpt
+% Plot ROC Curve for Naive Bayes 
 figure(5), clf;
 plot(Pfp_NB, Ptp_NB, 'b-', 'LineWidth', 2); hold on;
 plot(Pfp_NB(min_idx_NB), Ptp_NB(min_idx_NB), 'go',...
@@ -252,33 +248,32 @@ fprintf('\nPART C: FISHER LDA CLASSIFIER \n');
 x0 = x(:, label==0);  % Class 0 samples
 x1 = x(:, label==1);  % Class 1 samples
 
-% Estimate mean vectors and covariance matrices from samples - Based on LDAwithROCcurve.m
+% Estimate mean vectors and covariance matrices from samples 
 mu0hat = mean(x0, 2);
 S0hat = cov(x0');
 mu1hat = mean(x1, 2);
 S1hat = cov(x1');
 
-% Compute between-class and within-class scatter matrices - Based on LDAwithROCcurve.m
+% Compute between-class and within-class scatter matrices 
 Sb = (mu0hat - mu1hat) * (mu0hat - mu1hat)';  % Between-class scatter
 Sw = S0hat + S1hat;                             % Within-class scatter
 
-% Find Fisher LDA projection vector - Based on LDAwithROCcurve.m
+% Find Fisher LDA projection vector 
 [V, D] = eig(inv(Sw) * Sb);
 [~, ind] = sort(diag(D), 'descend');
 wLDA = V(:, ind(1));  % Fisher LDA projection vector
 yLDA = wLDA' * x; % Project all data onto the Fisher LDA direction
 
-% Ensure class 1 projects to positive side - Based on LDAwithROCcurve.m and
-% Claude assistance
+% Ensure class 1 projects to positive side 
 if mean(yLDA(label==1)) < mean(yLDA(label==0))
     wLDA = -wLDA;
     yLDA = -yLDA;
 end
 
-% Classification at theoretical gamma using LDA projections - Based on LDAwithROCcurve.m
+% Classification at theoretical gamma using LDA projections 
 discriminantScore_LDA = yLDA;
 
-% Generate ROC curve (LDA) - Code from professor - Based on LDAwithROCcurve.m
+% Generate ROC curve (LDA) 
 [Pfp_LDA, Ptp_LDA, Pfn_LDA, Perror_LDA, thresholdList_LDA] = ...
     ROCcurve(discriminantScore_LDA, label, p);
 
@@ -288,7 +283,7 @@ empirical_gamma_LDA = thresholdList_LDA(min_idx_LDA);
 fprintf('Empirically optimal gamma (LDA): %.4f\n', empirical_gamma_LDA);
 fprintf('P(error) at empirical gamma (LDA): %.4f\n', min_Perror_LDA);
 
-% Visualize LDA projections - Based on fisherLDA.m
+% Visualize LDA projections
 figure(7), clf;
 subplot(2,1,1), 
 plot3(x(1,label==0), x(2,label==0), x(3,label==0), 'bo'); hold on;
@@ -306,7 +301,7 @@ xlabel('LDA Projection'), ylabel('');
 title('Part C: Data Projected onto Fisher LDA Direction');
 legend('Class 0', 'Class 1');
 
-% Plot ROC Curve for Fisher LDA - Utilized suggestions from Chatgpt
+% Plot ROC Curve for Fisher LDA
 figure(8), clf;
 plot(Pfp_LDA, Ptp_LDA, 'b-', 'LineWidth', 2); hold on;
 plot(Pfp_LDA(min_idx_LDA), Ptp_LDA(min_idx_LDA), 'go',...
@@ -338,7 +333,6 @@ fprintf('Part A (True Model)  - Min P(error): %.4f\n', min_Perror);
 fprintf('Part B (Naive Bayes) - Min P(error): %.4f\n', min_Perror_NB);
 fprintf('Part C (Fisher LDA)  - Min P(error): %.4f\n', min_Perror_LDA);
 
-%Code for function was taken from sample code (evalGaussian.m)
 function g = evalGaussian(x,mu,Sigma)
 % Evaluates the Gaussian pdf N(mu,Sigma) at each column of X
 [n,N] = size(x);
@@ -347,7 +341,6 @@ E = -0.5*sum((x-repmat(mu,1,N)).*(inv(Sigma)*(x-repmat(mu,1,N))),1);
 g = C*exp(E);
 end
 
-%Code for function was taken from sample codes (LDAwithROCcurve.m)
 function [Pfp,Ptp,Pfn,Perror,thresholdList] = ROCcurve(discriminantScores,label, p)
 [sortedScores,~] = sort(discriminantScores,'ascend');
 thresholdList = [min(sortedScores)-eps,(sortedScores(1:end-1)+sortedScores(2:end))/2, max(sortedScores)+eps];
@@ -360,3 +353,4 @@ for i = 1:length(thresholdList)
     Perror(i) = p(1)*Pfp(i) + p(2)*Pfn(i);
 end
 end
+
