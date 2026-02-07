@@ -1,6 +1,5 @@
 # ML Classification Methods
 Implementation and comparison of supervised classification algorithms: Bayes-optimal classifiers, SVMs, and neural networks.
-Projects
 
 ## 1. Bayes-Optimal Classification and ROC Analysis
 Comparison of classifiers on 3D Gaussian mixture data.
@@ -20,4 +19,5 @@ All experiments use synthetic Gaussian mixture data with known ground truth, all
 
 ## Future Work
 Python implementations with scikit-learn
+
 Additional activation function comparisons for MLP
