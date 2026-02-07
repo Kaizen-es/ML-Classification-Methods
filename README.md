@@ -15,7 +15,7 @@ Binary classification on concentric circles data using Support Vector Machines a
 Both classifiers achieve similar performance. The SVM is slightly better and more stable during training. The MLP struggles with optimization as model complexity increases.
 
 ## Datasets
-All experiments use synthetic Gaussian mixture data with known ground truth, allowing direct comparison against theoretical optimal performance.
+Synthetic datasets (Gaussian mixtures, concentric circles) used to compare against Bayes-optimal performance.
 
 ## Future Work
 Python implementations with scikit-learn
