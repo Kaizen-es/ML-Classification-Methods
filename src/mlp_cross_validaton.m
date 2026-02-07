@@ -1,6 +1,4 @@
 %{
-                    EECE5644 FALL 2025 - ASSIGNMENT 3
-                                QUESTION 1
                     MLP CLASSIFICATION WITH CROSS-VALIDATION
 %}
 
@@ -513,4 +511,5 @@ for l = 1:C
     u(1,indl) = 1.1*ones(1,Nl);
     x(:,indl) = mvnrnd(meanVectors(:,l),covMatrices(:,:,l),Nl)';
 end
+
 end
