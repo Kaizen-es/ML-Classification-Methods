@@ -7,7 +7,6 @@ clear all, close all,
 % Set random seed for reproducibility
 rng(5644, 'twister');
 
-fprintf('ASSIGNMENT 3 - QUESTION 1\n');
 fprintf('MLP Classification with Cross-Validation\n\n');
 
 % STEP 1: DESIGN 4-CLASS GMM IN 3D SPACE
@@ -39,7 +38,7 @@ Sigma(:,:,4) = [2.5  0.3  0.3;
                 0.3  2.5  0.3;
                 0.3  0.3  2.5];
 
-% Setup GMM parameters - Pattern from Professor's generateDataFromGMM.m
+% Setup GMM parameters 
 gmmParameters.priors = p;
 gmmParameters.meanVectors = mu;
 gmmParameters.covMatrices = Sigma;
@@ -54,7 +53,7 @@ fprintf('DATASETS\n');
 % Training set sizes
 N_train = [100, 500, 1000, 5000, 10000];
 
-% Generate training datasets - Using Professor's generateDataFromGMM.m
+% Generate training datasets 
 x_train = cell(length(N_train), 1);
 labels_train = cell(length(N_train), 1);
 
@@ -76,7 +75,7 @@ for i = 1:length(N_train)
     fprintf(')\n');
 end
 
-% Generate test dataset - Using Professor's generateDataFromGMM.m
+% Generate test dataset 
 N_test = 100000;
 [x_test, labels_test] = generateDataFromGMM(N_test, gmmParameters);
 
@@ -94,7 +93,7 @@ for l = 1:C
 end
 fprintf(')\n\n');
 
-% Visualize test data - Pattern from Professor's ExpectedRiskMinimization.m (lines 43-45)
+% Visualize test data 
 figure(1), clf,
 plot3(x_test(1,labels_test==1), x_test(2,labels_test==1), x_test(3,labels_test==1), '.b'); hold on;
 plot3(x_test(1,labels_test==2), x_test(2,labels_test==2), x_test(3,labels_test==2), '.r');
@@ -110,17 +109,17 @@ view(45, 30);
 
 fprintf('THEORETICALLY OPTIMAL CLASSIFIER\n');
 
-% Compute class-conditional likelihoods - Pattern from Professor's ERMwithClabels.m
+% Compute class-conditional likelihoods 
 pxgivenl = zeros(C, N_test);
 for l = 1:C
     pxgivenl(l,:) = evalGaussian(x_test, mu(:,l), Sigma(:,:,l));
 end
 
-% Compute class posteriors - Pattern from Professor's ERMwithClabels.m
+% Compute class posteriors 
 px = p * pxgivenl;
 classPosteriors = pxgivenl .* repmat(p', 1, N_test) ./ repmat(px, C, 1);
 
-% MAP decision rule - Pattern from Professor's ERMwithClabels.m
+% MAP decision rule
 [~, decisions] = max(classPosteriors, [], 1);
 
 % Calculate probability of error
@@ -129,7 +128,7 @@ P_error_optimal = sum(decisions ~= labels_test) / N_test;
 fprintf('  P(error) = %.4f (%.2f%%)\n', P_error_optimal, 100*P_error_optimal);
 
 
-% Compute confusion matrix - Pattern from Professor's ERMwithClabels.m
+% Compute confusion matrix 
 ConfusionMatrix = zeros(C,C);
 for d = 1:C
     for l = 1:C
@@ -144,7 +143,7 @@ for l = 1:C
 end
 fprintf('\n');
 
-% Visualize classification results - Pattern adapted from discussion with Chatgpt
+% Visualize classification results 
 figure(2), clf, hold on
 
 correct = (decisions == labels_test);
@@ -175,7 +174,7 @@ trained_models = cell(length(N_train), 1);
 for i = 1:length(N_train)
     fprintf('\nTraining set size: N = %d\n', N_train(i));
     
-    % Get current training data (keep as n x N format for consistency with professor's code)
+    % Get current training data 
     X_current = x_train{i};  % 3 x N
     Y_current = labels_train{i};  % 1 x N
     
@@ -185,13 +184,12 @@ for i = 1:length(N_train)
         P = P_values(j);
         fprintf('%d ', P);
         
-        % 10-fold cross-validation - Structure adapted from Professor's 
-        % PolynomialFitCrossValidation.m (lines 34-52: K-fold loop structure and error averaging)
+        % 10-fold cross-validation 
         cv = cvpartition(Y_current, 'KFold', K);
         fold_errors = zeros(K, 1);
         
         for k = 1:K
-            % Split data - Partition approach adapted from Professor's kfoldMLP.m
+            % Split data 
             train_idx = training(cv, k);
             val_idx = test(cv, k);
             
@@ -203,17 +201,17 @@ for i = 1:length(N_train)
             % Train MLP with P perceptrons using custom implementation
             Mdl = trainCustomMLP(X_fold_train, Y_fold_train, P, C);
             
-            % Validate - using classification error as objective per assignment
+            % Validate - using classification error as objective
             predictions = predictCustomMLP(Mdl, X_fold_val);
             fold_errors(k) = sum(predictions ~= Y_fold_val) / length(Y_fold_val);
         end
         
-        % Average validation error across folds - Pattern from Professor's PolynomialFitCrossValidation.m
+        % Average validation error across folds
         cv_errors(i, j) = mean(fold_errors);
     end
     fprintf('\n');
     
-    % Select optimal P - Pattern from Professor's PolynomialFitCrossValidation.m
+    % Select optimal P 
     [min_error, best_idx] = min(cv_errors(i, :));
     P_optimal(i) = P_values(best_idx);
     
@@ -223,7 +221,7 @@ for i = 1:length(N_train)
     fprintf('  Optimal P* = %d (CV error = %.4f)\n', P_optimal(i), min_error);
     
     % Train final model with optimal P on full training set
-    % Multiple random initializations to avoid local optima per assignment requirement
+    % Multiple random initializations to avoid local optima
     fprintf('  Final model with P* = %d\n', P_optimal(i));
     
     best_log_likelihood = -inf;
@@ -231,7 +229,7 @@ for i = 1:length(N_train)
     n_initializations = 3;
     
     for init = 1:n_initializations
-        % Set seed for reproducible but distinct initializations - Recommended by ChatGPT
+        % Set seed for reproducible but distinct initializations
         rng(5644 + init, 'twister');
         
         % Train with random initialization
@@ -263,7 +261,7 @@ for i = 1:length(N_train)
     fprintf('  Training P(error): %.4f\n', train_error);
 end
 
-% Report Structure Adapted from discussions with Claude
+% Report Structure 
 fprintf('\n');
 fprintf('MODEL ORDER SELECTION SUMMARY\n');
 fprintf('  Training Size  |  Optimal P*  |  CV Error\n');
@@ -274,7 +272,6 @@ for i = 1:length(N_train)
 end
 
 % EVALUATE MLPS ON TEST SET
-% Report Structure Adapted from discussions with Claude
 fprintf('\n EVALUATING TRAINED MLPS ON TEST SET\n');
 % Storage for results
 P_error_MLP = zeros(length(N_train), 1);
@@ -357,7 +354,6 @@ fprintf('\n  Observation: MLP performance approaches optimal as N increases\n\n'
 
 % HELPER FUNCTIONS
 % Custom MLP training function
-% Developed with Claude AI, integrating Professor's MLP patterns from mleMLPwAWGN.m and kfoldMLP.m
 function model = trainCustomMLP(X, Y, nPerceptrons, nClasses)
     % X: n x N (features x samples)
     % Y: 1 x N (class labels 1 to nClasses)
@@ -368,13 +364,12 @@ function model = trainCustomMLP(X, Y, nPerceptrons, nClasses)
     nY = nClasses;
     
     % Xavier/Glorot-style initialization for better starting point
-    % Recommended by ChatGPT for numerical stability
     params.A = randn(nPerceptrons, nX) * sqrt(2/nX);
     params.b = zeros(nPerceptrons, 1);  % Start biases at zero
     params.C = randn(nY, nPerceptrons) * sqrt(2/nPerceptrons);
     params.d = zeros(nY, 1);
     
-    % Convert to vector for fminsearch - Pattern from Professor's mleMLPwAWGN.m
+    % Convert to vector for fminsearch
     vecParamsInit = [params.A(:); params.b; params.C(:); params.d];
     
     % Define sizeParams BEFORE using it in fminsearch
@@ -385,8 +380,8 @@ function model = trainCustomMLP(X, Y, nPerceptrons, nClasses)
     maxEvals = max(5000, 50 * nParams);  % At least 50 evaluations per parameter
     maxIter = max(2000, 20 * nParams);   % At least 20 iterations per parameter
     
-    % Optimize using fminsearch - Pattern from Professor's mleMLPwAWGN.m
-    % fminsearch minimizes cross-entropy loss (ML estimation per assignment)
+    % Optimize using fminsearch 
+    % fminsearch minimizes cross-entropy loss 
     options = optimset('MaxFunEvals', maxEvals, ...
                        'MaxIter', maxIter, ...
                        'TolFun', 1e-6, ...  % Tighter convergence tolerance
@@ -396,7 +391,7 @@ function model = trainCustomMLP(X, Y, nPerceptrons, nClasses)
     vecParams = fminsearch(@(vecParams)(objectiveFunctionClassification(X, Y, sizeParams, vecParams)), ...
                            vecParamsInit, options);
     
-    % Convert back to structure - Pattern from Professor's mleMLPwAWGN.m 
+    % Convert back to structure 
     params.A = reshape(vecParams(1:nX*nPerceptrons), nPerceptrons, nX);
     params.b = vecParams(nX*nPerceptrons+1:(nX+1)*nPerceptrons);
     params.C = reshape(vecParams((nX+1)*nPerceptrons+1:(nX+1+nY)*nPerceptrons), nY, nPerceptrons);
@@ -407,10 +402,8 @@ function model = trainCustomMLP(X, Y, nPerceptrons, nClasses)
     model.nClasses = nClasses;
 end
 
-
 % MLP forward pass with numerically stable softmax output
-% Adapted from Professor's mleMLPwAWGN.m mlpModel function with softmax developed with Claude AI
-% Numerical stability improvement recommended by ChatGPT
+% Numerical stability improvement
 function H = mlpModelClassification(X, params)
     % X: n x N (features x samples)
     % H: nY x N (class posterior probabilities)
@@ -418,29 +411,28 @@ function H = mlpModelClassification(X, params)
     N = size(X, 2);
     nY = length(params.d);
     
-    % First layer: linear transformation - From Professor's mleMLPwAWGN.m mlpModel
+    % First layer: linear transformation 
     U = params.A * X + repmat(params.b, 1, N);  % nPerceptrons x N
     
-    % Hidden layer: ISRU activation - From Professor's kfoldMLP.m and mleMLPwAWGN.m
+    % Hidden layer: ISRU activation
     Z = activationFunction(U);  % nPerceptrons x N
     
-    % Second layer: linear transformation - From Professor's mleMLPwAWGN.m mlpModel
+    % Second layer: linear transformation 
     V = params.C * Z + repmat(params.d, 1, N);  % nY x N
     
-    % Output layer: numerically stable softmax - Recommended by ChatGPT
+    % Output layer: numerically stable softmax 
     % Max-subtraction prevents overflow for large V values
     Vmax = max(V, [], 1);  % 1 x N
     E = exp(V - repmat(Vmax, nY, 1));  % nY x N
     H = E ./ repmat(sum(E, 1), nY, 1);  % nY x N (class posteriors sum to 1)
 end
 
-% ISRU activation function - from Professor's kfoldMLP.m and mleMLPwAWGN.m
+% ISRU activation function 
 function out = activationFunction(in)
     out = in ./ sqrt(1 + in.^2);  % ISRU - smooth ramp-style nonlinearity
 end
 
 % Objective function: cross-entropy loss
-% Adapted from Professor's mleMLPwAWGN.m objectiveFunction with cross-entropy developed with Claude AI
 function objFncValue = objectiveFunctionClassification(X, Y, sizeParams, vecParams)
     % X: n x N
     % Y: 1 x N (class labels 1 to nClasses)
@@ -451,7 +443,7 @@ function objFncValue = objectiveFunctionClassification(X, Y, sizeParams, vecPara
     nPerceptrons = sizeParams(2);
     nY = sizeParams(3);
     
-    % Convert vector to structure - Pattern from Professor's mleMLPwAWGN.m objectiveFunction
+    % Convert vector to structure 
     params.A = reshape(vecParams(1:nX*nPerceptrons), nPerceptrons, nX);
     params.b = vecParams(nX*nPerceptrons+1:(nX+1)*nPerceptrons);
     params.C = reshape(vecParams((nX+1)*nPerceptrons+1:(nX+1+nY)*nPerceptrons), nY, nPerceptrons);
@@ -485,7 +477,6 @@ end
 
 
 % Gaussian evaluation with Cholesky factorization for numerical stability
-% Adapted from Professor's evalGaussian.m with Cholesky improvement recommended by ChatGPT
 function g = evalGaussian(x, mu, Sigma)
     [n, N] = size(x);
     R = chol(Sigma, 'lower');  % Cholesky factorization: Sigma = R*R'
@@ -496,7 +487,6 @@ function g = evalGaussian(x, mu, Sigma)
     g = C * exp(E);
 end
 
-% Code for generateDataFromGMM function taken from Professor's generateDataFromGMM.m
 function [x,labels] = generateDataFromGMM(N,gmmParameters)
 priors = gmmParameters.priors;
 meanVectors = gmmParameters.meanVectors;
@@ -513,3 +503,4 @@ for l = 1:C
 end
 
 end
+
